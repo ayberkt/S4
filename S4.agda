@@ -11,22 +11,11 @@ data Proposition : Set where
   □_    : Proposition → Proposition
   _⊃_   : Proposition → Proposition → Proposition
 
+open import Context Proposition
+
 infix  8 `M_
 infix  7 □_
 infixr 6 _⊃_
-
-data IntProp : Set where
-  `I_   : Base → IntProp
-  _⇒_  : IntProp → IntProp → IntProp
-
-infix 6 `I_
-infix 4  _⇒_
-
-Context = List Proposition
-
-data _∋_ : Context → Proposition → Set where
-  hd : ∀ {φ Γ}   → (φ ∷ Γ) ∋ φ
-  tl : ∀ {φ ψ Γ} → Γ ∋ φ → (ψ ∷ Γ) ∋ φ
 
 data _,_⊢_true : Context → Context → Proposition → Set where
   hyp  : ∀ {φ Δ Γ} → Γ ∋ φ → Δ , Γ ⊢ φ true
@@ -39,21 +28,24 @@ data _,_⊢_true : Context → Context → Proposition → Set where
 ⊢_valid : Proposition → Set
 ⊢ φ valid = [] , [] ⊢ φ true
 
+necessitation : ∀ {φ} → ⊢ φ valid → ⊢ □ φ valid
+necessitation = □I
+
 reflexivity : ∀ φ → ⊢ □ φ ⊃ φ valid
-reflexivity φ = ⊃I (□E (hyp hd) (hyp* hd))
+reflexivity φ = ⊃I (□E (hyp Z) (hyp* Z))
 
 -- Positive introspection.
 -- I read this epistemically: if the subject knows φ then they know that they
 -- know φ.
 ax-4 : ∀ φ → ⊢ □ φ ⊃ □ □ φ valid
-ax-4 φ = ⊃I (□E (hyp hd) (□I (□I (hyp* hd))))
+ax-4 φ = ⊃I (□E (hyp Z) (□I (□I (hyp* Z))))
 
-dist : ∀ φ ψ → ⊢ □ (φ ⊃ ψ) ⊃ □ φ ⊃ □ ψ valid
+dist : ∀ φ ψ → ⊢ □ (φ ⊃ ψ) ⊃ (□ φ ⊃ □ ψ) valid
 dist φ ψ =
   let
     𝒜 : (φ ∷ φ ⊃ ψ ∷ []) , [] ⊢ ψ true
-    𝒜 = ⊃E (hyp* (tl hd)) (hyp* hd)
+    𝒜 = ⊃E (hyp* (S Z)) (hyp* Z)
     ℬ : [] , (□ φ ∷ □ (φ ⊃ ψ) ∷ []) ⊢ □ ψ true
-    ℬ = □E (hyp (tl hd)) (□E (hyp hd) (□I 𝒜))
+    ℬ = □E (hyp (S Z)) (□E (hyp Z) (□I 𝒜))
   in
     ⊃I (⊃I ℬ)
