@@ -2,8 +2,14 @@ module IPC (Base : Set) where
 
 open import Data.List using (List; _∷_)
 
-open import IPL     Base
+data IntProp : Set where
+  `I_   : Base → IntProp
+  _⇒_  : IntProp → IntProp → IntProp
+
 open import Context IntProp
+
+infix 6 `I_
+infix 4  _⇒_
 
 infix 3 _⊢ⱼ_
 
