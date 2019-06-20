@@ -3,8 +3,8 @@ module Translation (Base : Set) where
 open import Data.List using ([]; _∷_) renaming (map to _⟨$⟩_)
 open import Data.Product using (_×_)
 
-open import IPC     Base    renaming (`_ to `I_)
-open import S4      Base    renaming (`_ to `M_)
+open import IPC Base    renaming (`_ to `I_)
+open import S4  Base    renaming (`_ to `M_)
 open import Context
 
 ⟦_⟧ : IntProp → S4Prop
