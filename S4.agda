@@ -11,7 +11,7 @@ data S4Prop : Set where
   □_     : S4Prop → S4Prop
   _⊃_    : S4Prop → S4Prop → S4Prop
 
-open import Context S4Prop
+open import Context
 
 infix  7 □_
 infixr 6 _⊃_
@@ -21,7 +21,7 @@ infix  9 `_
 infixl 7 _$_
 infix  5 `λ
 
-data _,_⊢_ : Context → Context → S4Prop → Set where
+data _,_⊢_ : Context S4Prop → Context S4Prop → S4Prop → Set where
   `_          : ∀ {Δ Γ φ}   → Γ ∋ φ → Δ , Γ ⊢ φ
   _⋆          : ∀ {Δ Γ φ}   → Δ ∋ φ → Δ , Γ ⊢ φ
   `λ          : ∀ {Δ Γ φ ψ} → Δ , (φ ∷ Γ) ⊢ ψ → Δ , Γ ⊢ φ ⊃ ψ

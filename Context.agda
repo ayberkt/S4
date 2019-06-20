@@ -1,9 +1,10 @@
-module Context (Proposition : Set) where
+module Context where
 
 open import Data.List using (List; _∷_)
 
-Context = List Proposition
+Context : Set → Set
+Context = List
 
-data _∋_ : Context → Proposition → Set where
-  Z  : ∀ {Γ φ}   → (φ ∷ Γ) ∋ φ
-  S_ : ∀ {Γ φ ψ} → Γ ∋ φ → (ψ ∷ Γ) ∋ φ
+data _∋_ {A : Set} : List A → A → Set where
+  Z  : ∀ {Γ} {φ   : A} → (φ ∷ Γ) ∋ φ
+  S_ : ∀ {Γ} {φ ψ : A} → Γ ∋ φ → (ψ ∷ Γ) ∋ φ
