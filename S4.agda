@@ -6,46 +6,36 @@ open        Eq        using (_≡_; refl)
 open import Data.List using (List; []; _∷_; [_])
 open import Data.Nat  using (ℕ; suc; zero)
 
-data Proposition : Set where
-  `M_   : Base → Proposition
-  □_    : Proposition → Proposition
-  _⊃_   : Proposition → Proposition → Proposition
+data S4Prop : Set where
+  S4Base : Base → S4Prop
+  □_     : S4Prop → S4Prop
+  _⊃_    : S4Prop → S4Prop → S4Prop
 
-open import Context Proposition
+open import Context S4Prop
 
-infix  8 `M_
 infix  7 □_
 infixr 6 _⊃_
 
-data _,_⊢_true : Context → Context → Proposition → Set where
-  hyp  : ∀ {φ Δ Γ} → Γ ∋ φ → Δ , Γ ⊢ φ true
-  hyp* : ∀ {ψ Δ Γ} → Δ ∋ ψ → Δ , Γ ⊢ ψ true
-  ⊃I : ∀ {φ ψ Γ Δ} → Δ , (φ ∷ Γ) ⊢ ψ true → Δ , Γ ⊢ φ ⊃ ψ true
-  ⊃E : ∀ {φ ψ Δ Γ} → Δ , Γ ⊢ φ ⊃ ψ true → Δ , Γ ⊢ φ true → Δ , Γ ⊢ ψ true
-  □I : ∀ {φ Δ Γ} → Δ , [] ⊢ φ true → Δ , Γ ⊢ □ φ true
-  □E : ∀ {φ ψ Δ Γ} → Δ , Γ ⊢ □ φ true → (φ ∷ Δ) , Γ ⊢ ψ true → Δ , Γ ⊢ ψ true
+infix  3 _,_⊢_
+infix  9 `_
+infixl 7 _$_
+infix  5 `λ
 
-⊢_valid : Proposition → Set
-⊢ φ valid = [] , [] ⊢ φ true
+data _,_⊢_ : Context → Context → S4Prop → Set where
+  `_          : ∀ {Δ Γ φ}   → Γ ∋ φ → Δ , Γ ⊢ φ
+  _⋆          : ∀ {Δ Γ φ}   → Δ ∋ φ → Δ , Γ ⊢ φ
+  `λ          : ∀ {Δ Γ φ ψ} → Δ , (φ ∷ Γ) ⊢ ψ → Δ , Γ ⊢ φ ⊃ ψ
+  _$_         : ∀ {Δ Γ φ ψ} → Δ , Γ ⊢ φ ⊃ ψ → Δ , Γ ⊢ φ → Δ , Γ ⊢ ψ
+  quot        : ∀ {Δ Γ φ}   → Δ , [] ⊢ φ → Δ , Γ ⊢ □ φ
+  let-box_𝒾𝓃_ : ∀ {Δ Γ φ ψ} → Δ , Γ ⊢ □ φ → (φ ∷ Δ) , Γ ⊢ ψ → Δ , Γ ⊢ ψ
 
-necessitation : ∀ {φ} → ⊢ φ valid → ⊢ □ φ valid
-necessitation = □I
+-- Some example theorems in modal logic.
 
-reflexivity : ∀ φ → ⊢ □ φ ⊃ φ valid
-reflexivity φ = ⊃I (□E (hyp Z) (hyp* Z))
+MP : ∀ φ ψ → [] , [] ⊢ φ ⊃ (φ ⊃ ψ) ⊃ ψ
+MP φ ψ = `λ (`λ (` Z $ ` S Z))
 
--- Positive introspection.
--- I read this epistemically: if the subject knows φ then they know that they
--- know φ.
-ax-4 : ∀ φ → ⊢ □ φ ⊃ □ □ φ valid
-ax-4 φ = ⊃I (□E (hyp Z) (□I (□I (hyp* Z))))
+ax-4 : ∀ φ → [] , [] ⊢ □ φ ⊃ □ □ φ
+ax-4 _ = `λ (let-box ` Z 𝒾𝓃 quot (quot (Z ⋆)))
 
-dist : ∀ φ ψ → ⊢ □ (φ ⊃ ψ) ⊃ (□ φ ⊃ □ ψ) valid
-dist φ ψ =
-  let
-    𝒜 : (φ ∷ φ ⊃ ψ ∷ []) , [] ⊢ ψ true
-    𝒜 = ⊃E (hyp* (S Z)) (hyp* Z)
-    ℬ : [] , (□ φ ∷ □ (φ ⊃ ψ) ∷ []) ⊢ □ ψ true
-    ℬ = □E (hyp (S Z)) (□E (hyp Z) (□I 𝒜))
-  in
-    ⊃I (⊃I ℬ)
+reflexivity′ : ∀ φ → [] , [] ⊢ □ φ ⊃ φ
+reflexivity′ φ = `λ (let-box (` Z) 𝒾𝓃 (Z ⋆))

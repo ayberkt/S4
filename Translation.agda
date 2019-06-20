@@ -1,24 +1,26 @@
 module Translation (Base : Set) where
 
-open import Data.List using ([]; _∷_; map)
+open import Data.List using ([]; _∷_) renaming (map to _⟨$⟩_)
+open import Data.Product using (_×_)
 
-open import IPL     Base
-open import IPC     Base
-open import S4      Base
-open import S4Terms Base
-open import Context IntProp     renaming (Z to Zⱼ; S_ to Sⱼ_)
-open import Context Proposition renaming (Z to Zₘ; S_ to Sₘ_)
+open import IPC     Base    renaming (`_ to `I_)
+open import S4      Base    renaming (`_ to `M_)
+open import Context IntProp renaming (Z to Zᵢ; S_ to Sᵢ_; _∋_ to _∋ᵢ_)
+open import Context S4Prop  renaming (Z to Zₘ; S_ to Sₘ_; _∋_ to _∋ₘ_)
 
-⟦_⟧ : IntProp → Proposition
-⟦ `I x   ⟧ = □ `M x
-⟦ φ ⇒ ψ ⟧ = □ (⟦ φ ⟧ ⊃ ⟦ ψ ⟧)
+⟦_⟧ : IntProp → S4Prop
+⟦ IntBase b ⟧ = □ S4Base b
+⟦ φ ⇒ ψ    ⟧ = □ (⟦ φ ⟧ ⊃ ⟦ ψ ⟧)
 
-⟦_⟧T : ∀ {Δ Γ} {φ : IntProp} →  Γ ⊢ⱼ φ → Δ , (map ⟦_⟧ Γ) ⊢ ⟦ φ ⟧
-⟦_⟧T (` Zⱼ) = ` Zₘ
-⟦ ` (Sⱼ n) ⟧T = {!!}
-⟦_⟧T {Δ} {[]} (`λ M) = box (`λ ⟦ M ⟧T)
-⟦_⟧T {Δ} {x ∷ Γ} (`λ M) = {!` x!}
-⟦_⟧T {Δ} {Γ} (_$_ {φ = φ} {ψ = ψ} M N) = (let-box foo 𝒾𝓃 (Zₘ ⋆)) $ ⟦ N ⟧T
-  where
-    foo : Δ , (map ⟦_⟧ Γ) ⊢ □ (⟦ φ ⟧ ⊃ ⟦ ψ ⟧)
-    foo = {!? ⟦ M ⟧T!}
+⟦_⟧V : ∀ {Γ φ} → Γ ∋ᵢ φ → (⟦_⟧ ⟨$⟩ Γ) ∋ₘ ⟦ φ ⟧
+⟦ Zᵢ   ⟧V = Zₘ
+⟦ Sᵢ i ⟧V = Sₘ ⟦ i ⟧V
+
+⟦_⟧T : ∀ {Γ} {φ : IntProp} →  Γ ⊢ⱼ φ →  [] , (⟦_⟧ ⟨$⟩ Γ) ⊢ ⟦ φ ⟧
+⟦ `I i ⟧T                    = `M ⟦ i ⟧V
+⟦ M $ N ⟧T                   = let-box ⟦ M ⟧T 𝒾𝓃 (Zₘ ⋆) $ ⟦ N ⟧T
+⟦_⟧T {[]}    {φ ⇒ ψ} (`λ M) = quot (`λ ⟦ M ⟧T)
+⟦_⟧T {_ ∷ Γ} {φ ⇒ ψ} (`λ M) = quot (`λ {!!})
+
+⟦_⟧M : ∀ {φ : IntProp} → [] ⊢ⱼ φ → [] , [] ⊢ ⟦ φ ⟧
+⟦_⟧M = ⟦_⟧T
